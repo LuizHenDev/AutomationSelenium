@@ -230,6 +230,7 @@ class AlinharApontamento():
         pass
 
     def AbrirJanelaDeEdicaoDeApontamento(self):
+        
         self.botaoAbrirJanelaEdicao = self.driver.find_element(By.XPATH,"//button[contains(@id, 'apontamentosBotaoEditarRegistro-20')]")
         self.botaoAbrirJanelaEdicao.click()
         self.carregandoJanela026 = True
@@ -276,12 +277,22 @@ class AlinharApontamento():
     def FecharJanelaAjusteDeApontamento(self):
         ##Adicionar o click no botão de fechar      
         self.BotaoFechar = self.driver.find_element(By.XPATH,"//div[contains(@id, 'ppcp026_r')]//div[contains(@class,'buttons-header')]/span[2]")
-        self.driver.execute_script('console.log([arguments[0]])',self.BotaoFechar)
         self.BotaoFechar.click()
+        sleep(2)
+        self.FechandoJanela026 = True
+        while self.FechandoJanela026:
+             self.ValorClasses133 = self.Janela133.find_element(By.XPATH, '//div[contains(@id, "janelaPrincipal")]')
+             self.ValorClasses133 = self.ValorClasses133.get_attribute("class")
+             self.ValorClasses133 = self.ValorClasses133.split()
+             if len(self.ValorClasses133) != 1:
+                  print("Esperando a janela 026 fechar")
+                  sleep(5)
+             else: 
+                  print("Janela 026 fechada com sucesso")
+                  self.FechandoJanela026 = False
 
+    
         ###Fazer ele procurar pela classe waitingReponseLazy
-        print("Janela fechado com sucesso.")
-        sleep(40)
         pass
         
 iniciar = AlinharApontamento()
