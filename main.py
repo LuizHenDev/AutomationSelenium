@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common import exceptions as EX
-from selenium.webdriver import Keys, ActionChains
 from time import sleep
 'from colorsfont import bcolors'
 
@@ -31,7 +30,7 @@ class AlinharApontamento():
         self.driver = webdriver.Chrome()
         self.driver.get("https://sistema.labelgroup.com.br/portal/")
         pass
-
+    
     def Localizar133(self):
         self.buscandoJanela133 = True
         while self.buscandoJanela133:
@@ -185,12 +184,12 @@ class AlinharApontamento():
                                     self.minutoInicial= 0
                                     self.horaInicial=self.horaInicial+1
                                     self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                                    self.horarioFormatado
+                                    
                                 if self.horaInicial+1 == self.horaFinal and self.minutoFinal != 0:
                                     self.minutoInicial= 0
                                     self.horaInicial=self.horaInicial+1
                                     self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                                    self.horarioFormatado
+                                    
 
 
         ###Dias diferentes 
@@ -202,6 +201,7 @@ class AlinharApontamento():
                             self.minutoInicial = self.minutoInicial+1
                             self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
                             self.dataFormatada = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
+                            self.horarioFormatado = None
                             ###Adicionar Mudança de dia
 
 
@@ -215,6 +215,7 @@ class AlinharApontamento():
                                     self.horaInicial=self.horaInicial+1
                                     self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
                                     self.dataFormatada = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
+                                    self.horarioFormatado = None
                                     ###Adicionar Mudança de dia
                             
                             elif self.horaInicial ==23:
@@ -224,11 +225,29 @@ class AlinharApontamento():
                                     self.diaInicial= self.diaInicial+1
                                     self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
                                     self.dataFormatadao = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
+                                    self.horarioFormatado = None
                                     ###Adicionar mudança de dia)    
 
 
         pass
+    def VerificarApontamentoParada(self):
+        ##Adicionar a verificação de apontamento de parada ###
 
+        self.LoopBuscarTipoApontamento = True
+        self.ColetarTipoApontamento = self.driver.find_element(By.XPATH,"//div[contains(@id, 'apontamentosDescricaoTipo-20-input-container')]")
+
+        while self.LoopBuscarTipoApontamento:
+             
+             
+             try:
+                self.ColetarTipoApontamento = self.driver.find_element(By.XPATH,"//div[contains(@id, 'apontamentosDescricaoTipo-20')]/div/div/p")
+                self.TipoApontamento = self.ColetarTipoApontamento.text
+                self.LoopBuscarTipoApontamento=False
+             except:
+                  print("Localizando o tipo de parada, aguradando 3s")
+                  sleep(3)
+        print(self.TipoApontamento)
+        pass
     def AbrirJanelaDeEdicaoDeApontamento(self):
         
         self.botaoAbrirJanelaEdicao = self.driver.find_element(By.XPATH,"//button[contains(@id, 'apontamentosBotaoEditarRegistro-20')]")
@@ -258,7 +277,6 @@ class AlinharApontamento():
                   print("Esperando a janela 026 carregar por completo")                                                      
         self.valorInputDaJanela026.clear()
         sleep(2)
-        #Adicionar o metodo TratamentoDosHorariosDosApontamentos dentro do send_keys
         self.valorInputDaJanela026.send_keys(self.horarioFormatado)
         sleep(2)
         self.driver.execute_script('' \
@@ -274,8 +292,7 @@ class AlinharApontamento():
         sleep(5)
         pass
     
-    def FecharJanelaAjusteDeApontamento(self):
-        ##Adicionar o click no botão de fechar      
+    def FecharJanelaAjusteDeApontamento(self):    
         self.BotaoFechar = self.driver.find_element(By.XPATH,"//div[contains(@id, 'ppcp026_r')]//div[contains(@class,'buttons-header')]/span[2]")
         self.BotaoFechar.click()
         sleep(2)
@@ -290,9 +307,6 @@ class AlinharApontamento():
              else: 
                   print("Janela 026 fechada com sucesso")
                   self.FechandoJanela026 = False
-
-    
-        ###Fazer ele procurar pela classe waitingReponseLazy
         pass
         
 iniciar = AlinharApontamento()
