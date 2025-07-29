@@ -89,9 +89,13 @@ class AlinharApontamento():
         print(f"Apontamento Final: {self.ApontamentoFinal}")
         print("---------------------------------------")
         pass
-        
+
+    def CalculoVerificacaoLimitePorTempoDeProducao(self):
+        self.DiferencaTempo = ((self.diaFinal*24+self.horaFinal)*60 + self.minutoFinal) - ((self.diaInicial*24+self.horaInicial)*60 +self.minutoInicial)
+        return self.DiferencaTempo
     def TratamentoDosHorariosDosApontamentos(self):
        ##Fazer ele retornar o valor corrigido
+        self.TravaParaNaoRealizarCorrecao: False
         sleep(5)
         self.dataFormatada = None
         self.horarioFormatado = None
@@ -103,6 +107,8 @@ class AlinharApontamento():
         self.tempoFinal = self.anoETempoFinal.split()[-1]
         self.horaFinal = int(self.tempoFinal.split(":")[0])
         self.minutoFinal = int(self.tempoFinal.split(":")[-1])
+        
+
 
         ###Fatiação do valor do apontamento inicial
         self.ApontamentoInicialPartes= self.ApontamentoInicial.split("/")
@@ -114,119 +120,121 @@ class AlinharApontamento():
         self.minutoInicial = int(self.tempoInicial.split(":")[-1])
         
         ####Tratamento de dados####
-
-        ###Caso o apontamento inicial seja igual o apontamento final; 
+        print(f"A diferença de tempo é de:{self.CalculoVerificacaoLimitePorTempoDeProducao()} minutos" )
+        if self.CalculoVerificacaoLimitePorTempoDeProducao() <= 48:
         
-        if self.ApontamentoInicial == self.ApontamentoFinal:
-                        print("Tempos iguais, coletando o valor do proximo apontamento")
-                        sleep(2)
-                        self.ApontamentoInicial = self.driver.find_element(By.XPATH,"//input[contains(@id, 'apontamentosDataHoraFim-20')]")
-                        self.ApontamentoInicial = self.ApontamentoInicial.get_attribute("value")
-                        sleep(1)
-                        self.ApontamentoInicialPartes= self.ApontamentoInicial.split("/")
-                        self.diaInicial, self.mesInicial, self.anoETempoInicial= self.ApontamentoInicialPartes
-                        self.diaInicial = int(self.diaInicial)
-                        self.anoInicial = self.anoETempoInicial.split()[0]
-                        self.tempoInicial = self.anoETempoInicial.split()[-1]
-                        self.horaInicial = int(self.tempoInicial.split(":")[0])
-                        self.minutoInicial = int(self.tempoInicial.split(":")[-1])
-                        print("---------------------------------------")
-                        print(f"Apontamento Inicial: {self.ApontamentoInicial}")
-                        print(f"Apontamento Final: {self.ApontamentoFinal}")
-                        print("---------------------------------------")
+            ###Caso o apontamento inicial seja igual o apontamento final; 
+            
+            if self.ApontamentoInicial == self.ApontamentoFinal:
+                            print("Tempos iguais, coletando o valor do proximo apontamento")
+                            sleep(2)
+                            self.ApontamentoInicial = self.driver.find_element(By.XPATH,"//input[contains(@id, 'apontamentosDataHoraFim-20')]")
+                            self.ApontamentoInicial = self.ApontamentoInicial.get_attribute("value")
+                            sleep(1)
+                            self.ApontamentoInicialPartes= self.ApontamentoInicial.split("/")
+                            self.diaInicial, self.mesInicial, self.anoETempoInicial= self.ApontamentoInicialPartes
+                            self.diaInicial = int(self.diaInicial)
+                            self.anoInicial = self.anoETempoInicial.split()[0]
+                            self.tempoInicial = self.anoETempoInicial.split()[-1]
+                            self.horaInicial = int(self.tempoInicial.split(":")[0])
+                            self.minutoInicial = int(self.tempoInicial.split(":")[-1])
+                            print("---------------------------------------")
+                            print(f"Apontamento Inicial: {self.ApontamentoInicial}")
+                            print(f"Apontamento Final: {self.ApontamentoFinal}")
+                            print("---------------------------------------")
 
-                        if self.ApontamentoInicial != self.ApontamentoFinal:
-                        
+                            if self.ApontamentoInicial != self.ApontamentoFinal:
                             
-                            """Dias iguais com alteração"""
-                            if self.diaFinal == self.diaInicial and self.minutoFinal !=59:
-                                print(f"O tempo está sobreposto, mas com possível alteração")
-                                self.minutoFinal = self.minutoFinal+1
-                                self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
                                 
-                                """Dias iguais com alteração e mudança de horario"""
-                            elif self.minutoFinal == 59:
-
-
-                                if self.horaFinal <23:
-                                    print(f"Mudança de horario")
-                                    self.minutoFinal = 0
-                                    self.horaFinal = self.horaFinal+1
+                                """Dias iguais com alteração"""
+                                if self.diaFinal == self.diaInicial and self.minutoFinal !=59:
+                                    print(f"O tempo está sobreposto, mas com possível alteração")
+                                    self.minutoFinal = self.minutoFinal+1
                                     self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
                                     
-                                else: 
-                                    ###Realizar ajuste
-                                    print("tempo sobrepostos, com mudança de datas(Caso o minuto final seja 59)")
-                                    self.minutoFinal = 0
-                                    self.horaFinal= 0
-                                    self.diaFinal= self.diaFinal+1
-                                    self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
-                                    self.dataFormatada = f"{self.diaFinal:02d}/{self.mesFinal}/{self.anoFinal}"
+                                    """Dias iguais com alteração e mudança de horario"""
+                                elif self.minutoFinal == 59:
 
-                                """Mudança de dias"""
-                            elif self.diaFinal != self.diaInicial:
-                                print("Mudança de horario sobreposto, com permanencia do dia anterior")
-                                self.minutoFinal = self.minutoFinal+1
-                                self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
+
+                                    if self.horaFinal <23:
+                                        print(f"Mudança de horario")
+                                        self.minutoFinal = 0
+                                        self.horaFinal = self.horaFinal+1
+                                        self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
+                                        
+                                    else: 
+                                        ###Realizar ajuste
+                                        print("tempo sobrepostos, com mudança de datas(Caso o minuto final seja 59)")
+                                        self.minutoFinal = 0
+                                        self.horaFinal= 0
+                                        self.diaFinal= self.diaFinal+1
+                                        self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
+                                        self.dataFormatada = f"{self.diaFinal:02d}/{self.mesFinal}/{self.anoFinal}"
+
+                                    """Mudança de dias"""
+                                elif self.diaFinal != self.diaInicial:
+                                    print("Mudança de horario sobreposto, com permanencia do dia anterior")
+                                    self.minutoFinal = self.minutoFinal+1
+                                    self.horarioFormatado = f"{self.horaFinal:02d}:{self.minutoFinal:02d}"
+                                else:
+                                    print("Sem possível alteração")
+
+            elif self.minutoFinal != (self.minutoInicial+1) and self.diaFinal == self.diaInicial:
+            
+                            if self.minutoInicial <59:
+                                print("-------Tempos diferentes-------")
+                                self.minutoInicial = self.minutoInicial+1
+                                self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
                             else:
-                                print("Sem possível alteração")
-
-        elif self.minutoFinal != (self.minutoInicial+1) and self.diaFinal == self.diaInicial:
-        
-                        if self.minutoInicial <59:
-                            print("-------Tempos diferentes-------")
-                            self.minutoInicial = self.minutoInicial+1
-                            self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                        else:
-                            print("-------Tempo com adicional de hora------- ")
-                            if self.horaInicial < 23:
-                                if self.horaInicial+1 != self.horaFinal:
-                                    self.minutoInicial= 0
-                                    self.horaInicial=self.horaInicial+1
-                                    self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                                    
-                                if self.horaInicial+1 == self.horaFinal and self.minutoFinal != 0:
-                                    self.minutoInicial= 0
-                                    self.horaInicial=self.horaInicial+1
-                                    self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                                    
+                                print("-------Tempo com adicional de hora------- ")
+                                if self.horaInicial < 23:
+                                    if self.horaInicial+1 != self.horaFinal:
+                                        self.minutoInicial= 0
+                                        self.horaInicial=self.horaInicial+1
+                                        self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
+                                        
+                                    if self.horaInicial+1 == self.horaFinal and self.minutoFinal != 0:
+                                        self.minutoInicial= 0
+                                        self.horaInicial=self.horaInicial+1
+                                        self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
+                                        
 
 
-        ###Dias diferentes 
-        elif self.diaInicial != self.diaFinal:
-                        ### Permanencia de horario
-                        if self.minutoInicial <59:
+            ###Dias diferentes 
+            elif self.diaInicial != self.diaFinal:
+                            ### Permanencia de horario
+                            if self.minutoInicial <59:
 
-                            print("Mudança de horario, permanecendo o horario anterio") 
-                            self.minutoInicial = self.minutoInicial+1
-                            self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                            self.dataFormatada = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
-                            self.horarioFormatado = None
-                            ###Adicionar Mudança de dia
+                                print("Mudança de horario, permanecendo o horario anterio") 
+                                self.minutoInicial = self.minutoInicial+1
+                                self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
+                                self.dataFormatada = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
+                                self.horarioFormatado = None
+                                ###Adicionar Mudança de dia
 
 
-                        ###Mudança de hora
-                        elif self.minutoInicial==59:
-                            
-                            
-                            if self.horaInicial < 23:
-                                    
-                                    self.minutoInicial= 0
-                                    self.horaInicial=self.horaInicial+1
-                                    self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                                    self.dataFormatada = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
-                                    self.horarioFormatado = None
-                                    ###Adicionar Mudança de dia
-                            
-                            elif self.horaInicial ==23:
+                            ###Mudança de hora
+                            elif self.minutoInicial==59:
+                                
+                                
+                                if self.horaInicial < 23:
+                                        
+                                        self.minutoInicial= 0
+                                        self.horaInicial=self.horaInicial+1
+                                        self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
+                                        self.dataFormatada = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
+                                        self.horarioFormatado = None
+                                        ###Adicionar Mudança de dia
+                                
+                                elif self.horaInicial ==23:
 
-                                    self.minutoInicial = 0
-                                    self.horaInicial= 0
-                                    self.diaInicial= self.diaInicial+1
-                                    self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
-                                    self.dataFormatadao = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
-                                    self.horarioFormatado = None
-                                    ###Adicionar mudança de dia)    
+                                        self.minutoInicial = 0
+                                        self.horaInicial= 0
+                                        self.diaInicial= self.diaInicial+1
+                                        self.horarioFormatado = f"{self.horaInicial:02d}:{self.minutoInicial:02d}"
+                                        self.dataFormatadao = f"{self.diaInicial:02d}/{self.mesInicial}/{self.anoInicial}"
+                                        self.horarioFormatado = None
+                                        ###Adicionar mudança de dia)    
 
 
         pass
