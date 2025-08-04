@@ -11,18 +11,29 @@ class AlinharApontamento():
         self.AberturaNavegador()
         self.Localizar133()
         self.AdicinarBotaoAlinharApontamento()
+        self.botaoDownApontamentos = self.Janela133.find_element(By.XPATH," //*[contains(@id,'apontamentosBarraRolagem')]/div[5]/span")
         while True:
             sleep(3)
             self.ValorAlinharApontamento = self.driver.execute_script("return window.alinharApontamento")
             while self.ValorAlinharApontamento:
-                self.ColetarValoresDosApontamentos()
-                self.TratamentoDosHorariosDosApontamentos() 
-                if self.horarioFormatado !=None:
-                    self.AbrirJanelaDeEdicaoDeApontamento()
-                    print("metodo abrir janela de edição efetuado com sucesso")
-                    self.AlterarValorDoApontamentoNaJanela026()
-                    self.SalvarValorDoApontamento()
-                    self.FecharJanelaAjusteDeApontamento()
+                if self.VerificarApontamentoParada() == False:
+                    self.ColetarValoresDosApontamentos()
+                    if self.VerificarApontamentoParada() == False:
+                        self.TratamentoDosHorariosDosApontamentos() 
+                        if self.horarioFormatado !=None:
+                            self.AbrirJanelaDeEdicaoDeApontamento()
+                            print("metodo abrir janela de edição efetuado com sucesso")
+                            self.AlterarValorDoApontamentoNaJanela026()
+                            self.SalvarValorDoApontamento()
+                            self.FecharJanelaAjusteDeApontamento()
+                    else:
+                         self.botaoDownApontamentos.click()
+                         print("Apontamento de parada ")
+                         sleep(2)
+                else:
+                     self.botaoDownApontamentos.click()
+                     print("Apontamento de parada ")
+                     sleep(2)
                 break
         pass
     
@@ -75,19 +86,22 @@ class AlinharApontamento():
         "arguments[1].appendChild(li);", self.NavbarResolution,self.Ulbars)
         pass
     def ColetarValoresDosApontamentos(self):
+             
         ###Adicionar a verificação se é uma parada
         self.ApontamentoInicial = self.driver.find_element(By.XPATH,"//input[contains(@id, 'apontamentosDataHoraFim-20')]")
         ###Adicionar o click no botão para descer a lista de apontamento
         self.ApontamentoInicial = self.ApontamentoInicial.get_attribute("value")
         self.BotaoScrollParaBaixo = self.Janela133.find_element(By.XPATH," //*[contains(@id,'apontamentosBarraRolagem')]/div[5]/span")
+        
         self.BotaoScrollParaBaixo.click()
-        sleep(3)
-        self.ApontamentoFinal = self.driver.find_element(By.XPATH,"//input[contains(@id, 'apontamentosDataHoraIni-20')]")
-        self.ApontamentoFinal=self.ApontamentoFinal.get_attribute("value")
-        print("---------------------------------------")
-        print(f"Apontamento Inicial: {self.ApontamentoInicial}")
-        print(f"Apontamento Final: {self.ApontamentoFinal}")
-        print("---------------------------------------")
+        if self.VerificarApontamentoParada() == False:
+            sleep(3)
+            self.ApontamentoFinal = self.driver.find_element(By.XPATH,"//input[contains(@id, 'apontamentosDataHoraIni-20')]")
+            self.ApontamentoFinal=self.ApontamentoFinal.get_attribute("value")
+            print("---------------------------------------")
+            print(f"Apontamento Inicial: {self.ApontamentoInicial}")
+            print(f"Apontamento Final: {self.ApontamentoFinal}")
+            print("---------------------------------------")
         pass
 
     def CalculoVerificacaoLimitePorTempoDeProducao(self):
@@ -108,7 +122,7 @@ class AlinharApontamento():
         self.horaFinal = int(self.tempoFinal.split(":")[0])
         self.minutoFinal = int(self.tempoFinal.split(":")[-1])
         
-
+       
 
         ###Fatiação do valor do apontamento inicial
         self.ApontamentoInicialPartes= self.ApontamentoInicial.split("/")
@@ -240,22 +254,23 @@ class AlinharApontamento():
         pass
     def VerificarApontamentoParada(self):
         ##Adicionar a verificação de apontamento de parada ###
-
-        self.LoopBuscarTipoApontamento = True
-        self.ColetarTipoApontamento = self.driver.find_element(By.XPATH,"//div[contains(@id, 'apontamentosDescricaoTipo-20-input-container')]")
-
-        while self.LoopBuscarTipoApontamento:
-             
-             
+        self.ApontamentoDeParada = False
+        try:
+             self.parada_element= WebDriverWait(self.driver, 3).until(
+                 EC.presence_of_element_located((By.XPATH,"//div[contains(@id, 'apontamentosDescricaoTipo-20')]/div/div/p")))
+             self.tipoDeApontamento= self.parada_element.text
+             if self.tipoDeApontamento == "Parada":
+                  self.ApontamentoDeParada =True   
+        except:
              try:
-                self.ColetarTipoApontamento = self.driver.find_element(By.XPATH,"//div[contains(@id, 'apontamentosDescricaoTipo-20')]/div/div/p")
-                self.TipoApontamento = self.ColetarTipoApontamento.text
-                self.LoopBuscarTipoApontamento=False
+                  self.parada_element= self.driver.find_element(By.XPATH,"//select[contains(@id, 'apontamentosDescricaoTipo-20')]" )
+                  self.tipoDeApontamento = self.parada_element.get_attribute("value")
+                  if self.tipoDeApontamento == "parada":
+                       self.ApontamentoDeParada= True
              except:
-                  print("Localizando o tipo de parada, aguradando 3s")
-                  sleep(3)
-        print(self.TipoApontamento)
-        pass
+                  print("retornado false")
+        return self.ApontamentoDeParada
+        
     def AbrirJanelaDeEdicaoDeApontamento(self):
         
         self.botaoAbrirJanelaEdicao = self.driver.find_element(By.XPATH,"//button[contains(@id, 'apontamentosBotaoEditarRegistro-20')]")
