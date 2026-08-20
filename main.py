@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = {
+"""data = {
         "Name": ["Alice", "Bob", "Charlie", "David", "Eva"],
         "Age": [25, 30, 35, 40, 45],
 }
@@ -12,4 +12,12 @@ plt.bar(df["Name"], df["Age"])
 plt.xlabel("Name")
 plt.ylabel("Age")
 plt.title("Age of Individuals")
-plt.show()
+plt.show()"""""
+
+x = np.random.rand(50)
+y = np.random.rand(50)
+plt.scatter(x, y)
+plt.xlabel("X-axis")
+plt.ylabel("Y-axis")
+plt.title("Scatter Plot Example")
+plt.show()    
